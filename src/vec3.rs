@@ -5,7 +5,7 @@ pub type Point3 = Vec3;
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self.x().floor(), self.y().floor(), self.z().floor())
+        write!(f, "{} {} {}", (255.0 * self.x().sqrt()).floor(), (255.0 * self.y().sqrt()).floor(), (255.0 * self.z().sqrt()).floor())
     }
 }
 
@@ -30,7 +30,7 @@ impl Vec3 {
     }
 
     pub fn normalize(&self) -> Self {
-        (*self / self.length() + Vec3::new(1.0, 1.0, 1.0)) * 0.5
+        *self / self.length() 
     }
 
     pub fn length(&self) -> f64 {

@@ -10,7 +10,7 @@ pub enum Normal {
 }
 
 pub struct HitRecord {
-    pub p: Point3,
+    pub point: Point3,
     pub t: f64,
     pub normal: Normal,
 }

@@ -44,7 +44,7 @@ impl Hittable for Sphere {
             let hit = ray.at(root);
             let normal =  (hit - self.center) / self.radius;
             Some(HitRecord{
-                p: hit,
+                point: hit,
                 t: root,
                 normal: if dot(&direction, &normal) < 0.0 {
                     Normal::Front(normal)

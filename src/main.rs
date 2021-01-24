@@ -13,10 +13,12 @@ use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::hit::{HittableList, Hittable};
 use crate::camera::{Camera, APSECT_RATIO};
+use crate::util::random_unit_vector;
 
 use rand::Rng;
 
 const SAMPLES_PER_PIXEL : usize = 100;
+const MAX_DEPTH: usize = 50;
 
 fn main() {
     // Image
@@ -46,7 +48,7 @@ fn main() {
                 let u = (i as f64 + rng.gen_range(0.0..1.0)) / (image_width  - 1) as f64;
                 let v = (j as f64 + rng.gen_range(0.0..1.0)) / (image_height - 1) as f64;
                 let ray = camera.get_ray(u, v);
-                let sample_color = ray_color(ray, &world);
+                let sample_color = ray_color(ray, &world, MAX_DEPTH);
                 color += sample_color;
             }
            
@@ -56,11 +58,19 @@ fn main() {
     eprintln!("\nDone.");
 }
 
-fn ray_color(ray: Ray, world: &HittableList) -> Color {
-    if let Some(hit) = world.hit(&ray, &RangeInclusive::new(0.0, std::f64::INFINITY)) {
-        let normal = hit.normal();
-        return Color::new(255.0, 255.0, 255.0) * normal.normalize();
+fn ray_color(ray: Ray, world: &HittableList, depth: usize) -> Color {
+    if depth == 0 {
+        return Color::new(0.0, 0.0, 0.0);
     }
-    let t = ray.direction().normalize().y();
-    Color::new(255.0, 255.0, 255.0) * (1.0 -t) + Color::new(127.0, 178.0, 255.0) * t
+
+    if let Some(hit) = world.hit(&ray, &RangeInclusive::new(0.001, std::f64::INFINITY)) {
+        let normal = hit.normal();
+        // let color = Color::new(255.0, 255.0, 255.0) * normal.normalize();
+        let target = hit.point + hit.normal() + random_unit_vector();
+
+        let bounce_ray = Ray::new(hit.point, target - hit.point);
+        return ray_color(bounce_ray, &world, depth - 1) * 0.5;
+    }
+    let t = (ray.direction().normalize().y() + 1.0) * 0.5;
+    Color::new(1.0, 1.0, 1.0) * (1.0 -t) + Color::new(0.5, 0.7, 1.0) * t
 }
