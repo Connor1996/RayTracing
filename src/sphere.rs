@@ -1,7 +1,9 @@
+use std::ops::RangeInclusive;
+
 use crate::hit::{HitRecord, Normal, Hittable};
 use crate::ray::Ray;
-use crate::vec3::{dot,  Point3};
-use std::ops::RangeInclusive;
+use crate::vec3::{Point3};
+use crate::util::dot;
 
 pub struct Sphere {
     center: Point3,

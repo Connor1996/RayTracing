@@ -2,21 +2,26 @@ mod vec3;
 mod ray;
 mod hit;
 mod sphere;
+mod camera;
+mod util;
 
 use std::ops::RangeInclusive;
 use std::rc::Rc;
 
-use crate::vec3::{ Point3, Color, Vec3};
+use crate::vec3::{ Point3, Color };
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::hit::{HittableList, Hittable};
+use crate::camera::{Camera, APSECT_RATIO};
 
+use rand::Rng;
+
+const SAMPLES_PER_PIXEL : usize = 100;
 
 fn main() {
     // Image
-    let aspect_ratio = 16.0 / 9.0;
     let image_width = 400_u64;
-    let image_height = (image_width as f64 / aspect_ratio).floor() as u64;
+    let image_height = (image_width as f64 / APSECT_RATIO).floor() as u64;
 
     // World
     let mut world = HittableList::default();
@@ -29,27 +34,23 @@ fn main() {
         100.0,
     )));
 
-
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Point3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = origin - horizontal/2.0 - vertical/2.0 - Vec3::new(0.0, 0.0, focal_length);
-
+    let camera = Camera::new();
+    let mut rng = rand::thread_rng();
     println!("P3\n{} {}\n255", image_width, image_height);
     for j in (0..image_height).rev() {
         eprintln!("\r Scanline remaining: {} ", j);
         for i in 0..image_width {
-            let u = i as f64 / (image_width  - 1) as f64;
-            let v = j as f64 / (image_height - 1) as f64;
-            let ray = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v - origin);
-            let color = ray_color(ray, &world);
+            let mut color = Color::new(0.0, 0.0, 0.0);
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u = (i as f64 + rng.gen_range(0.0..1.0)) / (image_width  - 1) as f64;
+                let v = (j as f64 + rng.gen_range(0.0..1.0)) / (image_height - 1) as f64;
+                let ray = camera.get_ray(u, v);
+                let sample_color = ray_color(ray, &world);
+                color += sample_color;
+            }
            
-            println!("{}", color);
+            println!("{}", color / SAMPLES_PER_PIXEL as f64);
         }
     }
     eprintln!("\nDone.");
