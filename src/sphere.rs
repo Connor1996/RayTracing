@@ -1,9 +1,9 @@
 use std::ops::RangeInclusive;
 
-use crate::hit::{HitRecord, Normal, Hittable};
+use crate::hit::{HitRecord, Hittable, Normal};
 use crate::ray::Ray;
-use crate::vec3::{Point3};
 use crate::util::dot;
+use crate::vec3::Point3;
 
 pub struct Sphere {
     center: Point3,
@@ -12,10 +12,7 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(center: Point3, radius: f64) -> Self {
-        Self {
-            center, 
-            radius,
-        }
+        Self { center, radius }
     }
 }
 
@@ -23,12 +20,12 @@ impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_range: &RangeInclusive<f64>) -> Option<HitRecord> {
         let origin = ray.origin();
         let direction = ray.direction();
-    
+
         let oc = origin - self.center;
         let a = dot(&direction, &direction);
         let b = 2.0 * dot(&oc, &direction);
-        let c = dot(&oc, &oc) - self.radius* self.radius;
-    
+        let c = dot(&oc, &oc) - self.radius * self.radius;
+
         let discriminant = b * b - 4.0 * a * c;
         if discriminant < 0.0 {
             None
@@ -42,8 +39,8 @@ impl Hittable for Sphere {
                 }
             }
             let hit = ray.at(root);
-            let normal =  (hit - self.center) / self.radius;
-            Some(HitRecord{
+            let normal = (hit - self.center) / self.radius;
+            Some(HitRecord {
                 point: hit,
                 t: root,
                 normal: if dot(&direction, &normal) < 0.0 {

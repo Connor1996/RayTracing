@@ -1,8 +1,8 @@
 use std::ops::RangeInclusive;
 use std::rc::Rc;
 
-use crate::vec3::{Vec3, Point3};
 use crate::ray::Ray;
+use crate::vec3::{Point3, Vec3};
 
 pub enum Normal {
     Front(Vec3),

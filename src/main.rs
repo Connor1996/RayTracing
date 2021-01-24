@@ -1,23 +1,23 @@
-mod vec3;
-mod ray;
-mod hit;
-mod sphere;
 mod camera;
+mod hit;
+mod ray;
+mod sphere;
 mod util;
+mod vec3;
 
 use std::ops::RangeInclusive;
 use std::rc::Rc;
 
-use crate::vec3::{ Point3, Color };
+use crate::camera::{Camera, APSECT_RATIO};
+use crate::hit::{Hittable, HittableList};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::hit::{HittableList, Hittable};
-use crate::camera::{Camera, APSECT_RATIO};
 use crate::util::random_unit_vector;
+use crate::vec3::{Color, Point3};
 
 use rand::Rng;
 
-const SAMPLES_PER_PIXEL : usize = 100;
+const SAMPLES_PER_PIXEL: usize = 100;
 const MAX_DEPTH: usize = 50;
 
 fn main() {
@@ -27,14 +27,8 @@ fn main() {
 
     // World
     let mut world = HittableList::default();
-    world.add(Rc::new(Sphere::new(
-        Point3::new(0.0, 0.0, -1.0),
-        0.5,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point3::new(0.0, -100.5, -1.0),
-        100.0,
-    )));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
     let camera = Camera::new();
@@ -45,13 +39,13 @@ fn main() {
         for i in 0..image_width {
             let mut color = Color::new(0.0, 0.0, 0.0);
             for _ in 0..SAMPLES_PER_PIXEL {
-                let u = (i as f64 + rng.gen_range(0.0..1.0)) / (image_width  - 1) as f64;
+                let u = (i as f64 + rng.gen_range(0.0..1.0)) / (image_width - 1) as f64;
                 let v = (j as f64 + rng.gen_range(0.0..1.0)) / (image_height - 1) as f64;
                 let ray = camera.get_ray(u, v);
                 let sample_color = ray_color(ray, &world, MAX_DEPTH);
                 color += sample_color;
             }
-           
+
             println!("{}", color / SAMPLES_PER_PIXEL as f64);
         }
     }
@@ -72,5 +66,5 @@ fn ray_color(ray: Ray, world: &HittableList, depth: usize) -> Color {
         return ray_color(bounce_ray, &world, depth - 1) * 0.5;
     }
     let t = (ray.direction().normalize().y() + 1.0) * 0.5;
-    Color::new(1.0, 1.0, 1.0) * (1.0 -t) + Color::new(0.5, 0.7, 1.0) * t
+    Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
 }
