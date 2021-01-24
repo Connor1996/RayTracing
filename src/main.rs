@@ -1,5 +1,6 @@
 mod camera;
 mod hit;
+mod material;
 mod ray;
 mod sphere;
 mod util;
@@ -10,9 +11,9 @@ use std::rc::Rc;
 
 use crate::camera::{Camera, APSECT_RATIO};
 use crate::hit::{Hittable, HittableList};
+use crate::material::{Lambertian, Metal};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::util::random_unit_vector;
 use crate::vec3::{Color, Point3};
 
 use rand::Rng;
@@ -27,9 +28,26 @@ fn main() {
 
     // World
     let mut world = HittableList::default();
-    world.add(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Rc::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
-
+    world.add(Rc::new(Sphere::new(
+        Point3::new(0.0, 0.0, -1.0),
+        0.5,
+        Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        Rc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3))),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        0.5,
+        Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3)),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(1.0, 0.0, -1.0),
+        0.5,
+        Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0)),
+    )));
     // Camera
     let camera = Camera::new();
     let mut rng = rand::thread_rng();
@@ -58,12 +76,10 @@ fn ray_color(ray: Ray, world: &HittableList, depth: usize) -> Color {
     }
 
     if let Some(hit) = world.hit(&ray, &RangeInclusive::new(0.001, std::f64::INFINITY)) {
-        let normal = hit.normal();
-        // let color = Color::new(255.0, 255.0, 255.0) * normal.normalize();
-        let target = hit.point + hit.normal() + random_unit_vector();
-
-        let bounce_ray = Ray::new(hit.point, target - hit.point);
-        return ray_color(bounce_ray, &world, depth - 1) * 0.5;
+        if let Some((attenuation, scattered_ray)) = hit.material.scatter(&ray, &hit) {
+            return attenuation * ray_color(scattered_ray, &world, depth - 1) * 0.5;
+        }
+        return Color::new(0.0, 0.0, 0.0);
     }
     let t = (ray.direction().normalize().y() + 1.0) * 0.5;
     Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t

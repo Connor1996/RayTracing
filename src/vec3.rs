@@ -46,6 +46,12 @@ impl Vec3 {
     pub fn length_squared(&self) -> f64 {
         self.0 * self.0 + self.1 * self.1 + self.2 * self.2
     }
+
+    pub fn near_zero(&self) -> bool {
+        self.0.abs() < std::f64::EPSILON
+            && self.1.abs() < std::f64::EPSILON
+            && self.2.abs() < std::f64::EPSILON
+    }
 }
 
 impl std::fmt::Debug for Vec3 {

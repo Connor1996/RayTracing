@@ -26,3 +26,7 @@ pub fn random_in_unit_sphere() -> Point3 {
 pub fn random_unit_vector() -> Vec3 {
     random_in_unit_sphere().normalize()
 }
+
+pub fn reflect(v: &Vec3, normal: &Vec3) -> Vec3 {
+    *v - *normal * dot(&v, &normal) * 2.0
+}

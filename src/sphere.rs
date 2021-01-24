@@ -1,6 +1,8 @@
 use std::ops::RangeInclusive;
+use std::rc::Rc;
 
 use crate::hit::{HitRecord, Hittable, Normal};
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::util::dot;
 use crate::vec3::Point3;
@@ -8,11 +10,16 @@ use crate::vec3::Point3;
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new(center: Point3, radius: f64, material: Rc<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -48,6 +55,7 @@ impl Hittable for Sphere {
                 } else {
                     Normal::Back(-normal)
                 },
+                material: self.material.clone(),
             })
         }
     }

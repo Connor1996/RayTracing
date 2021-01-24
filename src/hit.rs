@@ -1,6 +1,7 @@
 use std::ops::RangeInclusive;
 use std::rc::Rc;
 
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
@@ -12,7 +13,8 @@ pub enum Normal {
 pub struct HitRecord {
     pub point: Point3,
     pub t: f64,
-    pub normal: Normal,
+    pub normal: Normal, // a unit vector
+    pub material: Rc<dyn Material>,
 }
 
 impl HitRecord {
