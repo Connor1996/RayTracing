@@ -24,10 +24,10 @@ fn main() {
         Point3::new(0.0, 0.0, -1.0),
         0.5,
     )));
-    // world.add(Rc::new(Sphere::new(
-    //     Point3::new(0.0, -100.5, -1.0),
-    //     100.0,
-    // )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+    )));
 
 
     // Camera
@@ -57,7 +57,8 @@ fn main() {
 
 fn ray_color(ray: Ray, world: &HittableList) -> Color {
     if let Some(hit) = world.hit(&ray, &RangeInclusive::new(0.0, std::f64::INFINITY)) {
-        return Color::new(255.0, 255.0, 255.0) * hit.normal();
+        let normal = hit.normal();
+        return Color::new(255.0, 255.0, 255.0) * normal.normalize();
     }
     let t = ray.direction().normalize().y();
     Color::new(255.0, 255.0, 255.0) * (1.0 -t) + Color::new(127.0, 178.0, 255.0) * t

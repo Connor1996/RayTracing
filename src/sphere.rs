@@ -40,7 +40,7 @@ impl Hittable for Sphere {
                 }
             }
             let hit = ray.at(root);
-            let normal =  (hit - self.center).normalize();
+            let normal =  (hit - self.center) / self.radius;
             Some(HitRecord{
                 p: hit,
                 t: root,
