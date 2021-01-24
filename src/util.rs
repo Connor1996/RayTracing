@@ -6,6 +6,11 @@ pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
     u.x() * v.x() + u.y() * v.y() + u.z() * v.z()
 }
 
+pub fn random_f64() -> f64 {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(0.0..1.0)
+}
+
 pub fn random_in_unit_sphere() -> Point3 {
     let mut rng = rand::thread_rng();
     loop {
@@ -29,4 +34,18 @@ pub fn random_unit_vector() -> Vec3 {
 
 pub fn reflect(v: &Vec3, normal: &Vec3) -> Vec3 {
     *v - *normal * dot(&v, &normal) * 2.0
+}
+
+pub fn refract(v: &Vec3, normal: &Vec3, etai_over_etat: f64) -> Vec3 {
+    let cos_theta = 1.0_f64.min(dot(&-*v, normal));
+
+    let r_out_perp = (*v + *normal * cos_theta) * etai_over_etat;
+    let r_out_parallel = *normal * -(1.0 - r_out_perp.length_squared()).abs().sqrt();
+    r_out_parallel + r_out_perp
+}
+
+pub fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+    // Use Schlick's approximation for reflectance.
+    let r0 = ((1.0 - ref_idx) / (1.0 + ref_idx)).powi(2);
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
