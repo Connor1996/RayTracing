@@ -6,6 +6,14 @@ pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
     u.x() * v.x() + u.y() * v.y() + u.z() * v.z()
 }
 
+pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
+    Vec3::new(
+        u.y() * v.z() - u.z() * v.y(),
+        u.z() * v.x() - u.x() * v.z(),
+        u.x() * v.y() - u.y() * v.x(),
+    )
+}
+
 pub fn random_f64() -> f64 {
     let mut rng = rand::thread_rng();
     rng.gen_range(0.0..1.0)

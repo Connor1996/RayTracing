@@ -40,20 +40,28 @@ fn main() {
         0.5,
         Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5))),
     )));
+    let material_left = Rc::new(Dielectric::new(1.5));
     world.add(Rc::new(Sphere::new(
         // left
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
-        Rc::new(Dielectric::new(1.5)),
+        material_left.clone(),
+    )));
+    world.add(Rc::new(Sphere::new(
+        // left
+        Point3::new(-1.0, 0.0, -1.0),
+        -0.45,
+        material_left,
     )));
     world.add(Rc::new(Sphere::new(
         // right
         Point3::new(1.0, 0.0, -1.0),
         0.5,
-        Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.3)),
+        Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.2)),
     )));
+
     // Camera
-    let camera = Camera::new();
+    let camera = Camera::new(Point3::new(-2.0, 2.0, 1.0), Point3::new(0.0, 0.0, -1.0), 90.0);
     let mut rng = rand::thread_rng();
     println!("P3\n{} {}\n255", image_width, image_height);
     for j in (0..image_height).rev() {

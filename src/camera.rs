@@ -1,5 +1,6 @@
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
+use crate::util::cross;
 
 pub const APSECT_RATIO: f64 = 16.0 / 9.0;
 
@@ -11,16 +12,21 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Self {
-        let viewport_height = 2.0;
+    pub fn new(lookfrom: Point3, lookat: Point3, vfov: f64) -> Self {
+        let h = (vfov.to_radians() / 2.0).tan();
+        let viewport_height = 2.0 * h;
         let viewport_width = APSECT_RATIO * viewport_height;
-        let focal_length = 1.0;
 
-        let origin = Point3::new(0.0, 0.0, 0.0);
-        let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-        let vertical = Vec3::new(0.0, viewport_height, 0.0);
+        let vup = Vec3::new(0.0, 1.0, 0.0);
+        let w = (lookfrom - lookat).normalize();
+        let u = cross(&vup, &w).normalize();
+        let v = cross(&w, &u);
+
+        let origin = lookfrom;
+        let horizontal = u * viewport_width;
+        let vertical = v * viewport_height;
         let lower_left_corner =
-            origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
+            origin - horizontal / 2.0 - vertical / 2.0 - w;
         Self {
             origin,
             horizontal,
