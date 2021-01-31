@@ -4,6 +4,7 @@ use std::sync::Arc;
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
+use crate::aabb::AABB;
 
 pub enum Normal {
     Front(Vec3),
@@ -28,6 +29,7 @@ impl HitRecord {
 
 pub trait Hittable: Send + Sync {
     fn hit(&self, ray: &Ray, t_range: &RangeInclusive<f64>) -> Option<HitRecord>;
+    fn bounding_box(&self) -> Option<AABB>;
 }
 
 #[derive(Default)]
@@ -52,5 +54,25 @@ impl Hittable for HittableList {
             }
         }
         hit_record
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        if self.objects.is_empty() {
+            return None;
+        }
+
+        let mut output_box = None;
+        for obj in &self.objects {
+            if let Some(b) = obj.bounding_box() {
+                if output_box.is_none() {
+                    output_box = Some(b);
+                } else {
+                    output_box = Some(AABB::surrounding_box(output_box.unwrap(), b));
+                }
+            } else {
+                return None;
+            }
+        }
+        output_box
     }
 }

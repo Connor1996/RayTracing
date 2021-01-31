@@ -5,6 +5,7 @@ mod ray;
 mod sphere;
 mod util;
 mod vec3;
+mod aabb;
 
 use std::ops::RangeInclusive;
 use std::sync::{Arc, Mutex};

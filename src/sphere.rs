@@ -5,7 +5,8 @@ use crate::hit::{HitRecord, Hittable, Normal};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::util::dot;
-use crate::vec3::Point3;
+use crate::vec3::{ Vec3, Point3};
+use crate::aabb::AABB;
 
 pub struct Sphere {
     center: Point3,
@@ -58,6 +59,13 @@ impl Hittable for Sphere {
                 material: self.material.clone(),
             })
         }
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        Some(AABB::new(
+            self.center - Vec3::new(self.radius, self.radius, self.radius),
+            self.center + Vec3::new(self.radius, self.radius, self.radius),
+        ))
     }
 }
 
@@ -130,5 +138,19 @@ impl Hittable for MovingSphere {
                 material: self.material.clone(),
             })
         }
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        let box0 =
+        AABB::new(
+            self.center(self.time0) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(self.time0) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        let box1 =
+        AABB::new(
+            self.center(self.time1) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(self.time1) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        Some(AABB::surrounding_box(box0, box1))
     }
 }
