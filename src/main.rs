@@ -65,9 +65,10 @@ fn main() {
 
     // Camera
     let camera = Arc::new(Camera::new(
-        Point3::new(-2.0, 2.0, 1.0),
+        Point3::new(3.0, 3.0, 2.0),
         Point3::new(0.0, 0.0, -1.0),
-        90.0,
+        20.0,
+        2.0, // aperture
     ));
     println!("P3\n{} {}\n255", image_width, image_height);
 
@@ -120,7 +121,6 @@ fn main() {
     }
 
     for j in (0..image_height).rev() {
-        eprintln!("\r Scanline remaining: {} ", j);
         for i in 0..image_width {
             println!("{}", canvas.lock().unwrap()[j][i]);
         }
