@@ -48,9 +48,10 @@ impl Vec3 {
     }
 
     pub fn near_zero(&self) -> bool {
-        self.0.abs() < std::f64::EPSILON
-            && self.1.abs() < std::f64::EPSILON
-            && self.2.abs() < std::f64::EPSILON
+        let eps = 1E-8f64;
+        self.0.abs() < eps
+            && self.1.abs() < eps
+            && self.2.abs() < eps
     }
 }
 

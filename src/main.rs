@@ -23,7 +23,7 @@ const MAX_DEPTH: usize = 50;
 
 fn main() {
     // Image
-    let image_width = 640_u64;
+    let image_width = 400_u64;
     let image_height = (image_width as f64 / APSECT_RATIO).floor() as u64;
 
     // World
@@ -89,7 +89,7 @@ fn ray_color(ray: Ray, world: &HittableList, depth: usize) -> Color {
 
     if let Some(hit) = world.hit(&ray, &RangeInclusive::new(0.001, std::f64::INFINITY)) {
         if let Some((attenuation, scattered_ray)) = hit.material.scatter(&ray, &hit) {
-            return attenuation * ray_color(scattered_ray, &world, depth - 1) * 0.5;
+            return attenuation * ray_color(scattered_ray, &world, depth - 1);
         }
         return Color::new(0.0, 0.0, 0.0);
     }
