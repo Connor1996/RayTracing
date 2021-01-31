@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::vec3::{Point3, Vec3};
 
 use rand::Rng;
@@ -15,8 +17,12 @@ pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
 }
 
 pub fn random_f64() -> f64 {
+    random_f64_range(0.0..1.0)
+}
+
+pub fn random_f64_range(range: Range<f64>) -> f64 {
     let mut rng = rand::thread_rng();
-    rng.gen_range(0.0..1.0)
+    rng.gen_range(range)
 }
 
 pub fn random_in_unit_sphere() -> Point3 {

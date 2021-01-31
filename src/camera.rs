@@ -1,5 +1,5 @@
 use crate::ray::Ray;
-use crate::util::{cross, random_in_unit_disk};
+use crate::util::{cross, random_f64_range, random_in_unit_disk};
 use crate::vec3::{Point3, Vec3};
 
 pub const APSECT_RATIO: f64 = 16.0 / 9.0;
@@ -16,10 +16,21 @@ pub struct Camera {
     w: Vec3,
 
     len_radius: f64,
+
+    time0: f64,
+    time1: f64,
 }
 
 impl Camera {
-    pub fn new(lookfrom: Point3, lookat: Point3, vfov: f64, aperture: f64, focus_dist: f64) -> Self {
+    pub fn new(
+        lookfrom: Point3,
+        lookat: Point3,
+        vfov: f64,
+        aperture: f64,
+        focus_dist: f64,
+        time0: f64,
+        time1: f64,
+    ) -> Self {
         let h = (vfov.to_radians() / 2.0).tan() * focus_dist; // the viewing is at z=-focus_dist
         let viewport_height = 2.0 * h;
         let viewport_width = APSECT_RATIO * viewport_height;
@@ -42,6 +53,8 @@ impl Camera {
             v,
             w,
             len_radius: aperture / 2.0,
+            time0,
+            time1,
         }
     }
 
@@ -52,6 +65,7 @@ impl Camera {
             self.origin + offset,
             self.lower_left_corner + self.horizontal * s + self.vertical * t
                 - (self.origin + offset),
+            random_f64_range(self.time0..self.time1),
         )
     }
 }

@@ -13,14 +13,14 @@ use crate::camera::{Camera, APSECT_RATIO};
 use crate::hit::{Hittable, HittableList};
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::ray::Ray;
-use crate::sphere::Sphere;
-use crate::vec3::{Color, Point3};
-use crate::util::random_f64;
+use crate::sphere::{MovingSphere, Sphere};
+use crate::util::{random_f64, random_f64_range};
+use crate::vec3::{Color, Point3, Vec3};
 
 use crossbeam::channel::unbounded;
 use rand::Rng;
 
-const SAMPLES_PER_PIXEL: usize = 500;
+const SAMPLES_PER_PIXEL: usize = 100;
 const MAX_DEPTH: usize = 50;
 
 const MAX_THREADS: usize = 12;
@@ -38,7 +38,11 @@ fn random_scene() -> HittableList {
     for a in -11..11 {
         for b in -11..11 {
             let choose_mat = random_f64();
-            let center = Point3::new(a as f64 + 0.9 * random_f64(), 0.2, b as f64 + 0.9 * random_f64());
+            let center = Point3::new(
+                a as f64 + 0.9 * random_f64(),
+                0.2,
+                b as f64 + 0.9 * random_f64(),
+            );
 
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.0 {
                 if choose_mat < 0.8 {
@@ -54,16 +58,19 @@ fn random_scene() -> HittableList {
                     )));
                 } else if choose_mat < 0.95 {
                     // metal
-                    world.add(Box::new(Sphere::new(
+                    world.add(Box::new(MovingSphere::new(
                         center,
+                        center + Vec3::new(0.0, random_f64_range(0.0..0.5), 0.0),
+                        0.0,
+                        1.0,
                         0.2,
                         Arc::new(Metal::new(
                             Color::new(
-                                random_f64() / 2.0 + 0.5,
-                                random_f64() / 2.0 + 0.5,
-                                random_f64() / 2.0 + 0.5,
+                                random_f64_range(0.5..1.0),
+                                random_f64_range(0.5..1.0),
+                                random_f64_range(0.5..1.0),
                             ),
-                            random_f64() / 2.0,
+                            random_f64_range(0.0..0.5) / 2.0,
                         )),
                     )));
                 } else {
@@ -85,7 +92,7 @@ fn random_scene() -> HittableList {
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
         1.0,
-    Arc::new(Dielectric::new(1.5)),
+        Arc::new(Dielectric::new(1.5)),
     )));
     world.add(Box::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
@@ -98,7 +105,7 @@ fn random_scene() -> HittableList {
 
 fn main() {
     // Image
-    let image_width = 1200_usize;
+    let image_width = 400_usize;
     let image_height = (image_width as f64 / APSECT_RATIO).floor() as usize;
 
     // World
@@ -109,8 +116,10 @@ fn main() {
         Point3::new(13.0, 2.0, 3.0),
         Point3::new(0.0, 0.0, 0.0),
         20.0,
-        0.1, // aperture
+        0.1,  // aperture
         10.0, // dist_to_focus
+        0.0,
+        1.0,
     ));
     println!("P3\n{} {}\n255", image_width, image_height);
 
