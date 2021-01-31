@@ -1,6 +1,6 @@
 use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3};
 use crate::util::cross;
+use crate::vec3::{Point3, Vec3};
 
 pub const APSECT_RATIO: f64 = 16.0 / 9.0;
 
@@ -25,8 +25,7 @@ impl Camera {
         let origin = lookfrom;
         let horizontal = u * viewport_width;
         let vertical = v * viewport_height;
-        let lower_left_corner =
-            origin - horizontal / 2.0 - vertical / 2.0 - w;
+        let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - w;
         Self {
             origin,
             horizontal,

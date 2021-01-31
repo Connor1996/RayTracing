@@ -1,5 +1,5 @@
 use std::ops::RangeInclusive;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::material::Material;
 use crate::ray::Ray;
@@ -14,7 +14,7 @@ pub struct HitRecord {
     pub point: Point3,
     pub t: f64,
     pub normal: Normal, // a unit vector
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material>,
 }
 
 impl HitRecord {
@@ -26,17 +26,17 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, ray: &Ray, t_range: &RangeInclusive<f64>) -> Option<HitRecord>;
 }
 
 #[derive(Default)]
 pub struct HittableList {
-    objects: Vec<Rc<dyn Hittable>>,
+    objects: Vec<Box<dyn Hittable>>,
 }
 
 impl HittableList {
-    pub fn add(&mut self, obj: Rc<dyn Hittable>) {
+    pub fn add(&mut self, obj: Box<dyn Hittable>) {
         self.objects.push(obj);
     }
 }

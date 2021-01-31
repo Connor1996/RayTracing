@@ -15,7 +15,7 @@ impl std::fmt::Display for Color {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Default, Clone)]
 pub struct Vec3(f64, f64, f64);
 
 impl Vec3 {
@@ -49,9 +49,7 @@ impl Vec3 {
 
     pub fn near_zero(&self) -> bool {
         let eps = 1E-8f64;
-        self.0.abs() < eps
-            && self.1.abs() < eps
-            && self.2.abs() < eps
+        self.0.abs() < eps && self.1.abs() < eps && self.2.abs() < eps
     }
 }
 

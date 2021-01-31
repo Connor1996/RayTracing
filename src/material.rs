@@ -5,7 +5,7 @@ use crate::util::{
 };
 use crate::vec3::Color;
 
-pub trait Material {
+pub trait Material: Send + Sync {
     fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)>;
 }
 
