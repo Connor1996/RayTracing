@@ -19,9 +19,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(lookfrom: Point3, lookat: Point3, vfov: f64, aperture: f64) -> Self {
-        let focus_dist = (lookat - lookfrom).length();
-
+    pub fn new(lookfrom: Point3, lookat: Point3, vfov: f64, aperture: f64, focus_dist: f64) -> Self {
         let h = (vfov.to_radians() / 2.0).tan() * focus_dist; // the viewing is at z=-focus_dist
         let viewport_height = 2.0 * h;
         let viewport_width = APSECT_RATIO * viewport_height;

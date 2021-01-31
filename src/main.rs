@@ -15,60 +15,102 @@ use crate::material::{Dielectric, Lambertian, Metal};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::{Color, Point3};
+use crate::util::random_f64;
 
 use crossbeam::channel::unbounded;
 use rand::Rng;
 
-const SAMPLES_PER_PIXEL: usize = 100;
+const SAMPLES_PER_PIXEL: usize = 500;
 const MAX_DEPTH: usize = 50;
 
 const MAX_THREADS: usize = 12;
 
+fn random_scene() -> HittableList {
+    let mut world = HittableList::default();
+
+    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        ground_material,
+    )));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = random_f64();
+            let center = Point3::new(a as f64 + 0.9 * random_f64(), 0.2, b as f64 + 0.9 * random_f64());
+
+            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.0 {
+                if choose_mat < 0.8 {
+                    // diffuse
+                    world.add(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Arc::new(Lambertian::new(Color::new(
+                            random_f64(),
+                            random_f64(),
+                            random_f64(),
+                        ))),
+                    )));
+                } else if choose_mat < 0.95 {
+                    // metal
+                    world.add(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Arc::new(Metal::new(
+                            Color::new(
+                                random_f64() / 2.0 + 0.5,
+                                random_f64() / 2.0 + 0.5,
+                                random_f64() / 2.0 + 0.5,
+                            ),
+                            random_f64() / 2.0,
+                        )),
+                    )));
+                } else {
+                    world.add(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Arc::new(Dielectric::new(1.5)),
+                    )));
+                }
+            }
+        }
+    }
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(-4.0, 1.0, 0.0),
+        1.0,
+        Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 1.0, 0.0),
+        1.0,
+    Arc::new(Dielectric::new(1.5)),
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(4.0, 1.0, 0.0),
+        1.0,
+        Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
+    )));
+
+    world
+}
+
 fn main() {
     // Image
-    let image_width = 400_usize;
+    let image_width = 1200_usize;
     let image_height = (image_width as f64 / APSECT_RATIO).floor() as usize;
 
     // World
-    let mut world = HittableList::default();
-    world.add(Box::new(Sphere::new(
-        // ground
-        Point3::new(0.0, -100.5, -1.0),
-        100.0,
-        Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))),
-    )));
-    world.add(Box::new(Sphere::new(
-        // center
-        Point3::new(0.0, 0.0, -1.0),
-        0.5,
-        Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5))),
-    )));
-    let material_left = Arc::new(Dielectric::new(1.5));
-    world.add(Box::new(Sphere::new(
-        // left
-        Point3::new(-1.0, 0.0, -1.0),
-        0.5,
-        material_left.clone(),
-    )));
-    world.add(Box::new(Sphere::new(
-        // left
-        Point3::new(-1.0, 0.0, -1.0),
-        -0.45,
-        material_left,
-    )));
-    world.add(Box::new(Sphere::new(
-        // right
-        Point3::new(1.0, 0.0, -1.0),
-        0.5,
-        Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.2)),
-    )));
+    let world = random_scene();
 
     // Camera
     let camera = Arc::new(Camera::new(
-        Point3::new(3.0, 3.0, 2.0),
-        Point3::new(0.0, 0.0, -1.0),
+        Point3::new(13.0, 2.0, 3.0),
+        Point3::new(0.0, 0.0, 0.0),
         20.0,
-        2.0, // aperture
+        0.1, // aperture
+        10.0, // dist_to_focus
     ));
     println!("P3\n{} {}\n255", image_width, image_height);
 
