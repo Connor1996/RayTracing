@@ -16,6 +16,11 @@ pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
     )
 }
 
+pub fn random_usize_range(range: Range<usize>) -> usize {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(range)
+}
+
 pub fn random_f64() -> f64 {
     random_f64_range(0.0..1.0)
 }

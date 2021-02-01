@@ -3,9 +3,10 @@ use std::ops::RangeInclusive;
 use crate::vec3::{Point3};
 use crate::ray::Ray;
 
+#[derive(Clone)]
 pub struct AABB {
-    minimum: Point3,
-    maximum: Point3,
+    pub minimum: Point3,
+    pub maximum: Point3,
 }
 
 impl AABB {
@@ -23,9 +24,9 @@ impl AABB {
             box0.minimum.z().min(box1.minimum.z()),
         );
         let big = Point3::new(
-            box0.maximum.x().min(box1.maximum.x()),
-            box0.maximum.y().min(box1.maximum.y()),
-            box0.maximum.z().min(box1.maximum.z()),
+            box0.maximum.x().max(box1.maximum.x()),
+            box0.maximum.y().max(box1.maximum.y()),
+            box0.maximum.z().max(box1.maximum.z()),
         );
         AABB::new(small, big)
     }
@@ -34,11 +35,11 @@ impl AABB {
         let mut t_min = *t_range.start();
         let mut t_max = *t_range.end();
         for i in 0..3 {
-            let invD = 1.0 / ray.direction()[i];
+            let inv_d = 1.0 / ray.direction()[i];
 
-            let mut t0 = (self.minimum[i] - ray.origin()[i]) * invD; 
-            let mut t1 = (self.maximum[i]- ray.origin()[i]) * invD;
-            if invD < 0.0 {
+            let mut t0 = (self.minimum[i] - ray.origin()[i]) * inv_d; 
+            let mut t1 = (self.maximum[i]- ray.origin()[i]) * inv_d;
+            if inv_d < 0.0 {
                std::mem::swap(&mut t0, &mut t1); 
             }
             t_min = t0.max(t_min);

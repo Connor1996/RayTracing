@@ -5,6 +5,7 @@ use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 use crate::aabb::AABB;
+use crate::bvh::BVH;
 
 pub enum Normal {
     Front(Vec3),
@@ -34,12 +35,16 @@ pub trait Hittable: Send + Sync {
 
 #[derive(Default)]
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    objects: Vec<Arc<dyn Hittable>>,
 }
 
 impl HittableList {
-    pub fn add(&mut self, obj: Box<dyn Hittable>) {
+    pub fn add(&mut self, obj: Arc<dyn Hittable>) {
         self.objects.push(obj);
+    }
+
+    pub fn into_bvh(self) -> BVH {
+        BVH::new(&self.objects)
     }
 }
 

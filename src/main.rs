@@ -6,6 +6,7 @@ mod sphere;
 mod util;
 mod vec3;
 mod aabb;
+mod bvh;
 
 use std::ops::RangeInclusive;
 use std::sync::{Arc, Mutex};
@@ -21,7 +22,7 @@ use crate::vec3::{Color, Point3, Vec3};
 use crossbeam::channel::unbounded;
 use rand::Rng;
 
-const SAMPLES_PER_PIXEL: usize = 100;
+const SAMPLES_PER_PIXEL: usize = 500;
 const MAX_DEPTH: usize = 50;
 
 const MAX_THREADS: usize = 12;
@@ -30,7 +31,7 @@ fn random_scene() -> HittableList {
     let mut world = HittableList::default();
 
     let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
         ground_material,
@@ -48,7 +49,7 @@ fn random_scene() -> HittableList {
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.0 {
                 if choose_mat < 0.8 {
                     // diffuse
-                    world.add(Box::new(Sphere::new(
+                    world.add(Arc::new(Sphere::new(
                         center,
                         0.2,
                         Arc::new(Lambertian::new(Color::new(
@@ -59,7 +60,7 @@ fn random_scene() -> HittableList {
                     )));
                 } else if choose_mat < 0.95 {
                     // metal
-                    world.add(Box::new(MovingSphere::new(
+                    world.add(Arc::new(MovingSphere::new(
                         center,
                         center + Vec3::new(0.0, random_f64_range(0.0..0.5), 0.0),
                         0.0,
@@ -75,7 +76,7 @@ fn random_scene() -> HittableList {
                         )),
                     )));
                 } else {
-                    world.add(Box::new(Sphere::new(
+                    world.add(Arc::new(Sphere::new(
                         center,
                         0.2,
                         Arc::new(Dielectric::new(1.5)),
@@ -85,17 +86,17 @@ fn random_scene() -> HittableList {
         }
     }
 
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
         Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
         1.0,
         Arc::new(Dielectric::new(1.5)),
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
         Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
@@ -137,7 +138,7 @@ fn main() {
         }
     }
 
-    let world = Arc::new(world);
+    let world = Arc::new(world.into_bvh());
     let mut handles = vec![];
     for _ in 0..MAX_THREADS {
         let world = world.clone();
@@ -153,7 +154,7 @@ fn main() {
                     let u = (i as f64 + rng.gen_range(0.0..1.0)) / (image_width - 1) as f64;
                     let v = (j as f64 + rng.gen_range(0.0..1.0)) / (image_height - 1) as f64;
                     let ray = camera.get_ray(u, v);
-                    let sample_color = ray_color(ray, &world, MAX_DEPTH);
+                    let sample_color = ray_color(ray, world.clone(), MAX_DEPTH);
                     color += sample_color;
                 }
                 canvas.lock().unwrap()[j][i] = color / SAMPLES_PER_PIXEL as f64;
@@ -179,14 +180,14 @@ fn main() {
     }
 }
 
-fn ray_color(ray: Ray, world: &HittableList, depth: usize) -> Color {
+fn ray_color(ray: Ray, world: Arc<dyn Hittable>, depth: usize) -> Color {
     if depth == 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
 
     if let Some(hit) = world.hit(&ray, &RangeInclusive::new(0.001, std::f64::INFINITY)) {
         if let Some((attenuation, scattered_ray)) = hit.material.scatter(&ray, &hit) {
-            return attenuation * ray_color(scattered_ray, &world, depth - 1);
+            return attenuation * ray_color(scattered_ray, world, depth - 1);
         }
         return Color::new(0.0, 0.0, 0.0);
     }
