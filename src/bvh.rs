@@ -1,9 +1,9 @@
-use std::ops::RangeInclusive;
 use std::cmp::Ordering;
+use std::ops::RangeInclusive;
 use std::sync::Arc;
 
-use crate::hit::{HitRecord, Hittable};
 use crate::aabb::AABB;
+use crate::hit::{HitRecord, Hittable};
 use crate::ray::Ray;
 use crate::util::random_usize_range;
 
@@ -32,11 +32,11 @@ impl BVH {
                 Ordering::Less => {
                     left = Some(objects[0].clone());
                     right = Some(objects[1].clone());
-                }, 
+                }
                 _ => {
                     left = Some(objects[1].clone());
                     right = Some(objects[0].clone());
-                },
+                }
             }
         } else {
             let mut objects = objects.to_vec();

@@ -1,12 +1,13 @@
+mod aabb;
+mod bvh;
 mod camera;
 mod hit;
 mod material;
 mod ray;
 mod sphere;
+mod texture;
 mod util;
 mod vec3;
-mod aabb;
-mod bvh;
 
 use std::ops::RangeInclusive;
 use std::sync::{Arc, Mutex};
@@ -16,6 +17,7 @@ use crate::hit::{Hittable, HittableList};
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::ray::Ray;
 use crate::sphere::{MovingSphere, Sphere};
+use crate::texture::{Checker, SolidColor};
 use crate::util::{random_f64, random_f64_range};
 use crate::vec3::{Color, Point3, Vec3};
 
@@ -30,7 +32,11 @@ const MAX_THREADS: usize = 12;
 fn random_scene() -> HittableList {
     let mut world = HittableList::default();
 
-    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = Checker::new(
+        Box::new(SolidColor::new(0.2, 0.3, 0.1)),
+        Box::new(SolidColor::new(0.9, 0.9, 0.9)),
+    );
+    let ground_material = Arc::new(Lambertian::new(Box::new(checker)));
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -52,11 +58,11 @@ fn random_scene() -> HittableList {
                     world.add(Arc::new(Sphere::new(
                         center,
                         0.2,
-                        Arc::new(Lambertian::new(Color::new(
+                        Arc::new(Lambertian::new(Box::new(SolidColor::new(
                             random_f64(),
                             random_f64(),
                             random_f64(),
-                        ))),
+                        )))),
                     )));
                 } else if choose_mat < 0.95 {
                     // metal
@@ -89,7 +95,7 @@ fn random_scene() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
-        Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+        Arc::new(Lambertian::new(Box::new(SolidColor::new(0.4, 0.2, 0.1)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),

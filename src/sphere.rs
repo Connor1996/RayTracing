@@ -1,12 +1,21 @@
 use std::ops::RangeInclusive;
 use std::sync::Arc;
 
+use crate::aabb::AABB;
 use crate::hit::{HitRecord, Hittable, Normal};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::util::dot;
-use crate::vec3::{ Vec3, Point3};
-use crate::aabb::AABB;
+use crate::vec3::{Point3, Vec3};
+
+fn get_sphere_uv(p: &Point3) -> (f64, f64) {
+    let theta = f64::acos(-p.y());
+    let phi = f64::atan2(-p.z(), p.x()) + std::f64::consts::PI;
+
+    let u = phi / (2.0 * std::f64::consts::PI);
+    let v = theta / std::f64::consts::PI;
+    (u, v)
+}
 
 pub struct Sphere {
     center: Point3,
@@ -48,6 +57,7 @@ impl Hittable for Sphere {
             }
             let hit = ray.at(root);
             let normal = (hit - self.center) / self.radius;
+            let (u, v) = get_sphere_uv(&normal);
             Some(HitRecord {
                 point: hit,
                 t: root,
@@ -57,6 +67,8 @@ impl Hittable for Sphere {
                     Normal::Back(-normal)
                 },
                 material: self.material.clone(),
+                u,
+                v,
             })
         }
     }
@@ -127,6 +139,7 @@ impl Hittable for MovingSphere {
             }
             let hit = ray.at(root);
             let normal = (hit - self.center(ray.time())) / self.radius;
+            let (u, v) = get_sphere_uv(&normal);
             Some(HitRecord {
                 point: hit,
                 t: root,
@@ -136,18 +149,18 @@ impl Hittable for MovingSphere {
                     Normal::Back(-normal)
                 },
                 material: self.material.clone(),
+                u,
+                v,
             })
         }
     }
 
     fn bounding_box(&self) -> Option<AABB> {
-        let box0 =
-        AABB::new(
+        let box0 = AABB::new(
             self.center(self.time0) - Vec3::new(self.radius, self.radius, self.radius),
             self.center(self.time0) + Vec3::new(self.radius, self.radius, self.radius),
         );
-        let box1 =
-        AABB::new(
+        let box1 = AABB::new(
             self.center(self.time1) - Vec3::new(self.radius, self.radius, self.radius),
             self.center(self.time1) + Vec3::new(self.radius, self.radius, self.radius),
         );

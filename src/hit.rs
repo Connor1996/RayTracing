@@ -1,11 +1,11 @@
 use std::ops::RangeInclusive;
 use std::sync::Arc;
 
+use crate::aabb::AABB;
+use crate::bvh::BVH;
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
-use crate::aabb::AABB;
-use crate::bvh::BVH;
 
 pub enum Normal {
     Front(Vec3),
@@ -17,6 +17,10 @@ pub struct HitRecord {
     pub t: f64,
     pub normal: Normal, // a unit vector
     pub material: Arc<dyn Material>,
+
+    // the normalized surface coordinates
+    pub u: f64,
+    pub v: f64,
 }
 
 impl HitRecord {

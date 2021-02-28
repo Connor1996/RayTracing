@@ -1,5 +1,6 @@
 use crate::hit::{HitRecord, Normal};
 use crate::ray::Ray;
+use crate::texture::Texture;
 use crate::util::{
     dot, random_f64, random_in_unit_sphere, random_unit_vector, reflect, reflectance, refract,
 };
@@ -10,12 +11,12 @@ pub trait Material: Send + Sync {
 }
 
 pub struct Lambertian {
-    albedo: Color,
+    albedo: Box<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(color: Color) -> Self {
-        Self { albedo: color }
+    pub fn new(texture: Box<dyn Texture>) -> Self {
+        Self { albedo: texture }
     }
 }
 
@@ -26,7 +27,8 @@ impl Material for Lambertian {
             direction = hit_record.normal()
         }
         Some((
-            self.albedo,
+            self.albedo
+                .value(hit_record.u, hit_record.v, &hit_record.point),
             Ray::new(hit_record.point, direction, ray.time()),
         ))
     }

@@ -1,7 +1,7 @@
 use std::ops::RangeInclusive;
 
-use crate::vec3::{Point3};
 use crate::ray::Ray;
+use crate::vec3::Point3;
 
 #[derive(Clone)]
 pub struct AABB {
@@ -37,10 +37,10 @@ impl AABB {
         for i in 0..3 {
             let inv_d = 1.0 / ray.direction()[i];
 
-            let mut t0 = (self.minimum[i] - ray.origin()[i]) * inv_d; 
-            let mut t1 = (self.maximum[i]- ray.origin()[i]) * inv_d;
+            let mut t0 = (self.minimum[i] - ray.origin()[i]) * inv_d;
+            let mut t1 = (self.maximum[i] - ray.origin()[i]) * inv_d;
             if inv_d < 0.0 {
-               std::mem::swap(&mut t0, &mut t1); 
+                std::mem::swap(&mut t0, &mut t1);
             }
             t_min = t0.max(t_min);
             t_max = t1.min(t_max);
